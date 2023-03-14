@@ -5,8 +5,6 @@
   "description": "Editor for generating CI configs",
   "unity": "2020.1",
   "unityRelease": "1f1",
-  "dependencies": {
-  },
   "author": {
     "name": "Anton Alexeyev",
     "email": "alexeyev.anton@gmail.com"
