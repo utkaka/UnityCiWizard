@@ -1,0 +1,60 @@
+stages:
+  - prepare
+  - test
+  - build
+  - after_build
+  - deploy
+
+variables:
+  UCI_BUILD_CACHE_PATH: BuildCache
+  UCI_BUILD_PATH: Build
+  
+.job: &job
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /\b("$UCI_JOB_CONDITION_BRANCHES")\b/'
+
+.unity: &unity
+  <<: *job
+  before_script:
+    - if [ -z "$UCI_PROJECT_UNITY_VERSION" ]; then UCI_PROJECT_UNITY_VERSION=$(awk '{for(i=1;i<=NF;i++){if($i~/([0-9A-Za-z]+(\.[0-9A-Za-z]+)+)/) {print $i;exit;}}}' ./ProjectSettings/ProjectVersion.txt); fi
+    - echo "$UCI_PROJECT_UNITY_VERSION"
+    - if [ -z "$UCI_PROJECT_UNITY_VERSION_CHANGESET" ]; then UCI_PROJECT_UNITY_VERSION_CHANGESET=$(awk '{for(i=1;i<=NF;i++){if($i~/\([0-9A-Za-z]+\)/) {print substr($i, 2, length($i)-2)}}}' ./ProjectSettings/ProjectVersion.txt); fi
+    - UCI_UNITY_EDITOR_PATH=$("$UCI_UNITY_HUB_PATH" -- --headless editors -i | awk -v ver="$UCI_PROJECT_UNITY_VERSION" '$0~ver{print}' | awk 'match($0,/installed at [^ ]*/){ print substr($0, RSTART + 13, RLENGTH)}')
+    - if [ -z "$UCI_UNITY_EDITOR_PATH" ]; then "$UCI_UNITY_HUB_PATH" -- --headless install --version "$UCI_PROJECT_UNITY_VERSION" --changeset "$UCI_PROJECT_UNITY_VERSION_CHANGESET"; fi
+    - if [ -z "$UCI_UNITY_EDITOR_PATH" ]; then UCI_UNITY_EDITOR_PATH=$("$UCI_UNITY_HUB_PATH" -- --headless editors -i | awk -v ver="$UCI_PROJECT_UNITY_VERSION" '$0~ver{print}' | awk 'match($0,/installed at [^ ]*/){ print substr($0, RSTART + 13, RLENGTH)}'); fi
+    - if [ -n "$UCI_UNITY_MODULE" ]; then "$UCI_UNITY_HUB_PATH" -- --headless install-modules --version "$UCI_PROJECT_UNITY_VERSION" "${UCI_UNITY_MODULE[@]/#/--module }" --cm; fi
+    - echo "$UCI_UNITY_EDITOR_PATH" > editor_path.txt
+    - '"$UCI_UNITY_EDITOR_PATH"/"$UCI_UNITY_EXECUTABLE" -projectPath $pwd -batchmode -silent-crashes
+          -logFile unity.log
+          $UCI_LICENSE_CREDENTIALS 
+          $UCI_LICENSE_SERIAL
+          $UCI_JOB_ARGUMENTS'
+  after_script:
+    - UCI_UNITY_EDITOR_PATH=$(cat editor_path.txt)
+    - if [ -n "${UCI_RETURN_LICENSE}" ]; then "$UCI_UNITY_EDITOR_PATH"/"$UCI_UNITY_EXECUTABLE" -quit -batchmode $UCI_LICENSE_CREDENTIALS -returnlicense -logFile -; fi 
+
+.build: &build
+  <<: *unity
+  stage: build
+  variables:
+    UCI_JOB_ARGUMENTS: '
+    -quit
+    -executeMethod Editor.UnityCiHelper.CiJob.Execute 
+    -ciJobType "$UCI_JOB_TYPE" 
+    "$UCI_JOB_BUILD_ARGUMENTS"'
+  cache:
+    key: "$CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$UCI_UNITY_TARGET"
+    paths:
+      - "Library"
+      - "$UCI_BUILD_CACHE_PATH/$CI_JOB_NAME"
+    when: 'always'
+  script:
+    - mkdir -p "$UCI_BUILD_PATH"/"$CI_JOB_NAME"
+    - mv "$UCI_BUILD_CACHE_PATH"/"$CI_JOB_NAME"/"$UCI_BUILD_NAME" "$UCI_BUILD_PATH"/"$CI_JOB_NAME"
+  artifacts:
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+      - unity.log
+      - assetSizeReport.txt
+      - "$UCI_BUILD_PATH/$CI_JOB_NAME/*"

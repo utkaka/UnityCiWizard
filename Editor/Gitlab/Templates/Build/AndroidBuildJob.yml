@@ -1,0 +1,22 @@
+$TEMPLATE_JOB_NAME:
+  <<: *build
+  variables:
+    UCI_JOB_CONDITION_BRANCHES: $TEMPLATE_JOB_CONDITION_BRANCHES
+    UCI_UNITY_MODULE: $TEMPLATE_UNITY_MODULE
+    UCI_BUILD_NAME: "$TEMPLATE_BUILD_NAME"
+    UCI_JOB_ARGUMENTS: '
+      -buildTarget $TEMPLATE_UNITY_EDITOR_TARGET
+      -executeMethod Editor.UnityCiHelper.CiJob.Execute 
+      -ciJobType "$TEMPLATE_JOB_TYPE" 
+      -jobName "$CI_JOB_NAME" 
+      -jobOptions $TEMPLATE_BUILD_OPTIONS 
+      -jobBuildPath "$UCI_BUILD_CACHE_PATH/$CI_JOB_NAME/$UCI_BUILD_NAME"
+      -jobKeyStore "$TEMPLATE_KEYSTORE_NAME"
+      -jobKeyAlias "$TEMPLATE_ALIAS_NAME"
+      -jobKeyStorePass "$TEMPLATE_KEYSTORE_PASS"
+      -jobKeyAliasPass "$TEMPLATE_ALIAS_PASS"'
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /\b($TEMPLATE_JOB_CONDITION_BRANCHES)\b/'
+  tags:
+    - Unity
+    - $TEMPLATE_UNITY_EDITOR_TARGET
