@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/utkaka/UnityCiWizard/compare/v1.0.1...v1.0.2) (2023-03-15)
+
+
+### Bug Fixes
+
+* update execute method name ([d6a6ae1](https://github.com/utkaka/UnityCiWizard/commit/d6a6ae17b8051dbba871237c26523f6602328921))
+
 ## [1.0.1](https://github.com/utkaka/UnityCiWizard/compare/v1.0.0...v1.0.1) (2023-03-14)
 
 
