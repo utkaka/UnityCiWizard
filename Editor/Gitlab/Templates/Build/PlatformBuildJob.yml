@@ -8,7 +8,7 @@ $TEMPLATE_JOB_NAME:
     UCI_BUILD_NAME: "$TEMPLATE_BUILD_NAME"
     UCI_JOB_BUILD_ARGUMENTS: '
       -buildTarget $TEMPLATE_UNITY_EDITOR_TARGET
-      -executeMethod Editor.UnityCiHelper.CiJob.Execute 
+      -executeMethod UnityCiWizard.Editor.CiJob.Execute 
       -ciJobType "$TEMPLATE_JOB_TYPE" 
       -jobName "$CI_JOB_NAME" 
       -jobOptions $TEMPLATE_BUILD_OPTIONS 

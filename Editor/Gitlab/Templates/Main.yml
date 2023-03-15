@@ -39,7 +39,7 @@ variables:
   variables:
     UCI_JOB_ARGUMENTS: '
     -quit
-    -executeMethod Editor.UnityCiHelper.CiJob.Execute 
+    -executeMethod UnityCiWizard.Editor.CiJob.Execute 
     -ciJobType "$UCI_JOB_TYPE" 
     "$UCI_JOB_BUILD_ARGUMENTS"'
   cache:

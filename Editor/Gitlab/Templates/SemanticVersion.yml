@@ -23,7 +23,7 @@ $TEMPLATE_JOB_NAME:
   variables:
     UCI_JOB_ARGUMENTS: '
     -quit
-    -executeMethod Editor.UnityCiHelper.CiJob.Execute
+    -executeMethod UnityCiWizard.Editor.CiJob.Execute
     -ciJobType $TEMPLATE_JOB_TYPE
     -jobName "$CI_JOB_NAME"
     -jobCommitTitle "$CI_COMMIT_TITLE"'
