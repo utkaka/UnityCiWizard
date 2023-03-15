@@ -5,6 +5,7 @@ $TEMPLATE_JOB_NAME:
     UCI_UNITY_MODULE: $TEMPLATE_UNITY_MODULE
     UCI_BUILD_NAME: "$TEMPLATE_BUILD_NAME"
     UCI_JOB_BUILD_ARGUMENTS: '
+      -quit
       -buildTarget $TEMPLATE_UNITY_EDITOR_TARGET
       -executeMethod UnityCiWizard.Editor.CiJob.Execute 
       -ciJobType "$TEMPLATE_JOB_TYPE" 
