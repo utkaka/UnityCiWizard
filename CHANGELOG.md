@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/utkaka/UnityCiWizard/compare/v1.0.3...v1.0.4) (2023-03-16)
+
+
+### Bug Fixes
+
+* change semver logic ([3527996](https://github.com/utkaka/UnityCiWizard/commit/3527996a107145721983d1d55db81453b79ba46f))
+
 ## [1.0.3](https://github.com/utkaka/UnityCiWizard/compare/v1.0.2...v1.0.3) (2023-03-16)
 
 
