@@ -7,8 +7,8 @@ $TEMPLATE_JOB_NAME:
       - "Library"
     when: 'always'
   script:
-    - if [ ! -f bundle_version.txt ]; then exit 0; fi
-    - UCI_SEMANTIC_VERSION=$(cat bundle_version.txt)
+    - if [ ! -f old_bundle_version.txt ]; then exit 0; fi
+    - UCI_SEMANTIC_VERSION=$(cat old_bundle_version.txt)
     - ssh-keyscan $CI_SERVER_HOST >> ~/.ssh/known_hosts
     - echo "$CI_GIT_SSH_PRIVATE_KEY" > gitlab-ci
     - chmod 600 gitlab-ci
@@ -16,20 +16,20 @@ $TEMPLATE_JOB_NAME:
     - git config user.name "$CI_GIT_USER_USERNAME"
     - git remote remove ssh_origin || true
     - git remote add ssh_origin "ssh://git@$CI_SERVER_HOST:${CI_SERVER_SSH_PORT:-22}/$CI_PROJECT_PATH.git"
-    - 'git commit ProjectSettings/ProjectSettings.asset -m "[skip ci]chore: bump version to $UCI_SEMANTIC_VERSION"'
-    - git -c core.sshCommand="ssh -o IdentitiesOnly=yes -i gitlab-ci" push ssh_origin HEAD:$CI_COMMIT_BRANCH
     - git tag $UCI_SEMANTIC_VERSION
     - git -c core.sshCommand="ssh -o IdentitiesOnly=yes -i gitlab-ci" push --tags ssh_origin
+    - 'git commit ProjectSettings/ProjectSettings.asset -m "[skip ci]chore: bump version"'
+    - git -c core.sshCommand="ssh -o IdentitiesOnly=yes -i gitlab-ci" push ssh_origin HEAD:$CI_COMMIT_BRANCH
   variables:
     UCI_JOB_ARGUMENTS: '
     -quit
     -executeMethod UnityCiWizard.Editor.CiJob.Execute
     -ciJobType $TEMPLATE_JOB_TYPE
     -jobName "$CI_JOB_NAME"
-    -jobCommitTitle "$CI_COMMIT_TITLE"'
+    -jobCommitTitleAndDescription "$CI_COMMIT_TITLE;$CI_COMMIT_DESCRIPTION"'
   artifacts:
     name: "$CI_JOB_NAME"
-    when: on_success
+    when: always
     paths:
       - unity.log
   rules:

@@ -43,6 +43,7 @@ namespace UnityCiWizard.Editor.Jobs.Build {
 
 		public virtual BuildPlayerOptions ConstructBuildOptions(Dictionary<string, string> arguments) {
 			int.TryParse(arguments[ArgumentJobOptions], out var buildOptions);
+			PlayerSettings.SplashScreen.showUnityLogo = false;
 			var buildPlayerOptions = new BuildPlayerOptions {
 				scenes = EditorBuildSettings.scenes.Where(s => s.enabled)
 					.Where(s => !string.IsNullOrEmpty(s.path))

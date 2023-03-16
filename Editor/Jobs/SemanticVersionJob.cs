@@ -7,10 +7,10 @@ using UnityEngine;
 namespace UnityCiWizard.Editor.Jobs {
 	[CiJobMenu("Semantic version", 1)]
 	public class SemanticVersionJob : UnityJob {
-		private const string ArgumentJobCommitTitle = "jobCommitTitle";
+		private const string ArgumentJobCommitTitleAndDescription = "jobCommitTitleAndDescription";
 		public override string TemplateFileName => "SemanticVersion";
-		public override string[] GetRequiredCommandLineArguments => new[] {ArgumentJobCommitTitle};
-		public override string[] GetTestExecutionAdditionalParameters => new[] {ArgumentJobCommitTitle};
+		public override string[] GetRequiredCommandLineArguments => new[] {ArgumentJobCommitTitleAndDescription};
+		public override string[] GetTestExecutionAdditionalParameters => new[] {ArgumentJobCommitTitleAndDescription};
 
 		public SemanticVersionJob() {
 			Name = "Version Update";
@@ -21,8 +21,17 @@ namespace UnityCiWizard.Editor.Jobs {
 		}
 
 		public override void Execute(Dictionary<string, string> arguments) {
-			var commitTitle = arguments[ArgumentJobCommitTitle];
-			var commitType = commitTitle.Split(':')[0].ToLower();
+			var commitTitleAndDescription = arguments[ArgumentJobCommitTitleAndDescription];
+			var commitTitleAndDescriptionSplit = commitTitleAndDescription.Split(';');
+			foreach (var titleOrDescription in commitTitleAndDescriptionSplit) {
+				if (!DetectSemanticVersion(titleOrDescription)) continue;
+				break;
+			}
+		}
+
+		private bool DetectSemanticVersion(string commitTitleOrDescription) {
+			commitTitleOrDescription = commitTitleOrDescription.Trim();
+			var commitType = commitTitleOrDescription.Split(':')[0].ToLower();
 			var bundleVersionSplit = PlayerSettings.bundleVersion.Split('.');
 			if (bundleVersionSplit.Length != 3)
 				throw new ArgumentException("Bundle version has to have {major}.{minor}.{patch} format");
@@ -45,13 +54,14 @@ namespace UnityCiWizard.Editor.Jobs {
 					major++;
 					break;
 				default:
-					Debug.Log("Nothing to do");
-					return;
+					Debug.Log($"Nothing to do with {commitTitleOrDescription}");
+					return false;
 			}
-			PlayerSettings.bundleVersion = $"{major}.{minor}.{patch}";
-			var file = new StreamWriter("bundle_version.txt", false);
+			var file = new StreamWriter("old_bundle_version.txt", false);
 			file.WriteLine(PlayerSettings.bundleVersion);
 			file.Close();
+			PlayerSettings.bundleVersion = $"{major}.{minor}.{patch}";
+			return true;
 		}
 	}
 }
