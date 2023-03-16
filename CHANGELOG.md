@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/utkaka/UnityCiWizard/compare/v1.0.2...v1.0.3) (2023-03-16)
+
+
+### Bug Fixes
+
+* add missing build jobs argument ([6c68ddf](https://github.com/utkaka/UnityCiWizard/commit/6c68ddf4b86ce7da3a1667bc0b19cc7b1432a6d1))
+* templates fixes, always return license ([496f4ab](https://github.com/utkaka/UnityCiWizard/commit/496f4ab51a2ac0b2cddeb06c2b901f989c88e77b))
+
 ## [1.0.2](https://github.com/utkaka/UnityCiWizard/compare/v1.0.1...v1.0.2) (2023-03-15)
 
 
