@@ -8,13 +8,8 @@ stages:
 variables:
   UCI_BUILD_CACHE_PATH: BuildCache
   UCI_BUILD_PATH: Build
-  
-.job: &job
-  rules:
-    - if: '$CI_COMMIT_BRANCH =~ /\b("$UCI_JOB_CONDITION_BRANCHES")\b/'
 
 .unity: &unity
-  <<: *job
   before_script:
     - if [ -z "$UCI_PROJECT_UNITY_VERSION" ]; then UCI_PROJECT_UNITY_VERSION=$(awk '{for(i=1;i<=NF;i++){if($i~/([0-9A-Za-z]+(\.[0-9A-Za-z]+)+)/) {print $i;exit;}}}' ./ProjectSettings/ProjectVersion.txt); fi
     - echo "$UCI_PROJECT_UNITY_VERSION"
@@ -31,7 +26,7 @@ variables:
           $UCI_JOB_ARGUMENTS'
   after_script:
     - UCI_UNITY_EDITOR_PATH=$(cat editor_path.txt)
-    - if [ -n "${UCI_RETURN_LICENSE}" ]; then "$UCI_UNITY_EDITOR_PATH"/"$UCI_UNITY_EXECUTABLE" -quit -batchmode $UCI_LICENSE_CREDENTIALS -returnlicense -logFile -; fi 
+    - '"$UCI_UNITY_EDITOR_PATH"/"$UCI_UNITY_EXECUTABLE" -quit -batchmode $UCI_LICENSE_CREDENTIALS -returnlicense -logFile -'
 
 .build: &build
   <<: *unity

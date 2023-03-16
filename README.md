@@ -54,7 +54,6 @@ You need to setup runner's environment variables (~/.gitlab-runner/config.toml):
 
 - UCI_LICENSE_CREDENTIALS = -username {YOUR_UNITY_USERNAME} -password {YOUR_UNITY_PASSWORD}
 - UCI_LICENSE_SERIAL = -serial {YOUR_UNITY_SERIAL}
-- UCI_RETURN_LICENSE = {Any non empty value to return license after job execution}
 
 #### Semantic version
 
