@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/utkaka/UnityCiWizard/compare/v2.0.0...v2.0.1) (2024-09-18)
+
+
+### Bug Fixes
+
+* samples ([397d24d](https://github.com/utkaka/UnityCiWizard/commit/397d24de89864ebc3355bd899ff9bb50dff757c1))
+
 # [2.0.0](https://github.com/utkaka/UnityCiWizard/compare/v1.0.4...v2.0.0) (2024-09-18)
 
 
