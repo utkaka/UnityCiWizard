@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/utkaka/UnityCiWizard/compare/v1.0.4...v2.0.0) (2024-09-18)
+
+
+### Performance Improvements
+
+* package has been completely rewritten ([535beb0](https://github.com/utkaka/UnityCiWizard/commit/535beb08ef81cd9e3666946a728a1e1d1b2c29ad))
+
+
+### BREAKING CHANGES
+
+* package has been completely rewritten
+
 ## [1.0.4](https://github.com/utkaka/UnityCiWizard/compare/v1.0.3...v1.0.4) (2023-03-16)
 
 
