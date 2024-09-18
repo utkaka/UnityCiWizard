@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Mac Win CI Config
   m_EditorClassIdentifier: 
   _jobs:
-  - {fileID: 11400000, guid: 5825f098b96f14d628cb820dc149b392, type: 2}
-  - {fileID: 11400000, guid: 8eaf3761be18243a1817ff7b0337587d, type: 2}
-  - {fileID: 11400000, guid: 187a3e30e23b6471d949b3ac1fe7e504, type: 2}
-  - {fileID: 11400000, guid: 919897e536fc246e5b4da4347ba39324, type: 2}
+  - {fileID: 11400000, guid: d51390ec2dfbf4f05b83da1a9a0fdff8, type: 2}
+  - {fileID: 11400000, guid: 5e39424ef4d924819abf2342403f7b72, type: 2}
+  - {fileID: 11400000, guid: e783cb334780a40cfb00d31aa4ddd2c6, type: 2}
+  - {fileID: 11400000, guid: 8b6aaf1ba24fc4a94b5ea93a92e84f6e, type: 2}

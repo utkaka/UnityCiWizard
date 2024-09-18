@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d12db0bc4fd4b51ba74f28d29279082, type: 3}
   m_Name: Build Windows32 (develop)
   m_EditorClassIdentifier: 
-  _when: 0
+  _when: 3
   _branches: develop
   _cachePolicy: 1
   _cacheWhen: 0
-  _cache: {fileID: 11400000, guid: a334671e116d34d9cbe6b1f8a1f5cba4, type: 2}
+  _cache: {fileID: 11400000, guid: f773555d059744123ab4c51328a63b47, type: 2}
   _artifacts:
     _when: 0
     _paths:

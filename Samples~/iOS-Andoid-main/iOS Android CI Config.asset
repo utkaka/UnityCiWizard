@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: iOS Android CI Config
   m_EditorClassIdentifier: 
   _jobs:
-  - {fileID: 11400000, guid: 528835bfa144f410383a8727d7065f5b, type: 2}
-  - {fileID: 11400000, guid: 85709c70fc05a4690817234c291b95a5, type: 2}
-  - {fileID: 11400000, guid: 70409e85eceae4b628a4c3a5c6ed7b05, type: 2}
-  - {fileID: 11400000, guid: 60a88e1fb83a64f0597b13a14f9928ea, type: 2}
-  - {fileID: 11400000, guid: 587b76e69344c4bbab2e5667a7344027, type: 2}
-  - {fileID: 11400000, guid: 7f758db8e1edc45b9827c7ccff457ef0, type: 2}
+  - {fileID: 11400000, guid: 012dadeb01b2341858613ddc44c93d43, type: 2}
+  - {fileID: 11400000, guid: 948a9f39cb01b4ae08cc9a60bfce779b, type: 2}
+  - {fileID: 11400000, guid: b44024cf0f30047ef953ea67b49b97b4, type: 2}
+  - {fileID: 11400000, guid: 3828777141eb14e6f9c31cf7e3cf8e12, type: 2}
+  - {fileID: 11400000, guid: 52c7dc95784c64c7ca14dbc2e3beca2e, type: 2}
+  - {fileID: 11400000, guid: f4175d898b0034c93b381517fc151e66, type: 2}
