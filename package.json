@@ -9,5 +9,27 @@
     "name": "Anton Alexeyev",
     "email": "alexeyev.anton@gmail.com"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "samples": [
+    {
+      "displayName": "iOS-Andoid on a single main branch",
+      "description": "iOS-Andoid on a single main branch",
+      "path": "Samples~/iOS-Andoid-main"
+    },
+    {
+      "displayName": "iOS-Andoid on three branches: main, release, develop",
+      "description": "iOS-Andoid on three branches: main, release, develop",
+      "path": "Samples~/iOS-Andoid-main-release-develop"
+    },
+    {
+      "displayName": "MacOS-Windows on a single main branch",
+      "description": "MacOS-Windows on a single main branch",
+      "path": "Samples~/MacOS-Windows-main"
+    },
+    {
+      "displayName": "MacOS-Windows on three branches: main, release, develop",
+      "description": "MacOS-Windows on three branches: main, release, develop",
+      "path": "Samples~/MacOS-Windows-main-release-develop"
+    }
+  ]
 }

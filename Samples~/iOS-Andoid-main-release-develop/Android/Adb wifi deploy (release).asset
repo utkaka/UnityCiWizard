@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23af51c647804a5caf45511e4604ab3b, type: 3}
+  m_Name: Adb wifi deploy (release)
+  m_EditorClassIdentifier: 
+  _when: 0
+  _branches: main
+  _cachePolicy: 0
+  _cacheWhen: 0
+  _cache: {fileID: 0}
+  _artifacts:
+    _when: 0
+    _paths: []
+  _apkToInstall: {fileID: 11400000, guid: 48b5f3eecb560406293b2fc1e95d07bd, type: 2}

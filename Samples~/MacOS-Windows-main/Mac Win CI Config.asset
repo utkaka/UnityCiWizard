@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b39d96d4fdb4aef9c46a5667e99c42c, type: 3}
+  m_Name: Mac Win CI Config
+  m_EditorClassIdentifier: 
+  _jobs:
+  - {fileID: 11400000, guid: 5825f098b96f14d628cb820dc149b392, type: 2}
+  - {fileID: 11400000, guid: 8eaf3761be18243a1817ff7b0337587d, type: 2}
+  - {fileID: 11400000, guid: 187a3e30e23b6471d949b3ac1fe7e504, type: 2}
+  - {fileID: 11400000, guid: 919897e536fc246e5b4da4347ba39324, type: 2}

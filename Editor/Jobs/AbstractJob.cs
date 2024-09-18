@@ -1,42 +1,36 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using CiWizard.Editor.Jobs.Common;
 using UnityEngine;
 
-namespace UnityCiWizard.Editor.Jobs {
-	[Serializable]
-	public abstract class AbstractJob {
-		public const string TemplateJobName = "$TEMPLATE_JOB_NAME";
-		private const string TemplateJobConditionBranches = "$TEMPLATE_JOB_CONDITION_BRANCHES";
-
-		public abstract string TemplateFileName { get; }
-
+namespace CiWizard.Editor.Jobs {
+	public abstract class AbstractJob : ScriptableObject {
+		[Header("General")]
 		[SerializeField]
-		protected string Name;
+		private JobCondition _when;
 		[SerializeField]
-		private string _branches;
-
-		protected AbstractJob() {
-			_branches = "main";
-		}
-
-		public string GetVariable(string key) {
-			return GetVariables().First(kv => kv.Key == key).Value;
-		}
-
-		public IEnumerable<KeyValuePair<string, string>> GetVariables() {
-			yield return new KeyValuePair<string, string>(TemplateJobName, Name);
-			yield return new KeyValuePair<string, string>(TemplateJobConditionBranches, _branches);
-			foreach (var keyValuePair in GetInternalVariables()) {
-				yield return keyValuePair;
-			}
-		}
-
-		public virtual void SetVariables(Dictionary<string, string> variables) {
-			Name = variables[TemplateJobName];
-			_branches = variables[TemplateJobConditionBranches];
-		}
+		private string _branches = "main";
+		[SerializeField]
+		private JobCachePolicy _cachePolicy;
+		[SerializeField]
+		private ArtifactCondition _cacheWhen;
+		[SerializeField]
+		private JobCache _cache;
+		[SerializeField]
+		private JobArtifacts _artifacts;
 		
-		protected abstract IEnumerable<KeyValuePair<string, string>> GetInternalVariables();
+		public abstract string TemplateFileName { get; }
+		public virtual JobCondition When => _when;
+		public virtual string Branches => _branches.Replace("/", "\\/");
+
+		public JobCachePolicy CachePolicy => _cachePolicy;
+		public ArtifactCondition CacheWhen => _cacheWhen;
+
+		public JobCache Cache => _cache;
+		public JobArtifacts Artifacts => _artifacts;
+
+		protected AbstractJob(JobArtifacts artifacts) {
+			_artifacts = artifacts;
+		}
+
+		protected AbstractJob() { }
 	}
 }

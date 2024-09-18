@@ -1,0 +1,8 @@
+{{include 'Jobs/AbstractJob'}}
+  <<: *unity
+  stage: test
+  script:
+    - "$UCI_VAR_UNITY_EDITOR_PATH""$UCI_ENV_UNITY_EXECUTABLE" $UCI_VAR_UNITY_BATCH_MODE_ARGUMENTS -runTests -testResults tests.xml
+  tags:
+    - Unity
+  

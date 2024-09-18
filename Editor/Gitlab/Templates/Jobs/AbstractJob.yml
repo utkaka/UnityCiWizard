@@ -1,0 +1,11 @@
+{{job.name}}:
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /\b({{~ job.branches ~}})\b/ && $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_BRANCH =~ /\b({{~ job.branches ~}})\b/
+      when: {{job_condition_to_string job.when}}
+  {{if job.cache != null
+    include 'Cache'
+  end}}
+  {{if job.artifacts.paths.size > 0
+    include 'Artifacts'
+  end}}

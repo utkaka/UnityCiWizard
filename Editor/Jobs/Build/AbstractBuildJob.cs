@@ -2,86 +2,63 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CiWizard.Editor.Jobs.Build.Processors;
+using CiWizard.Editor.Jobs.Common;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-namespace UnityCiWizard.Editor.Jobs.Build {
-	[Serializable]
-	public abstract class AbstractBuildJob : UnityJob {
-		protected const string TemplateJobUnityModule = "$TEMPLATE_UNITY_MODULE";
-		protected const string TemplateJobUnityEditorTarget = "$TEMPLATE_UNITY_EDITOR_TARGET";
-		protected const string TemplateJobBuildName = "$TEMPLATE_BUILD_NAME";
-		private const string TemplateJobBuildOptions = "$TEMPLATE_BUILD_OPTIONS";
-		
-		private const string ArgumentJobBuildPath = "jobBuildPath";
-		private const string ArgumentJobOptions = "jobOptions";
-
-		public override string[] GetRequiredCommandLineArguments => new[] {
-			ArgumentJobBuildPath, ArgumentJobOptions
-		};
-		
+namespace CiWizard.Editor.Jobs.Build {
+	public abstract class AbstractBuildJob : UnityJobWithBuildTarget {
+		private static readonly string[] IgnoreBuildObjects = { "_DoNotShip", "_ButDontShipIt" };
+		[Header("Build")]
+		[SerializeField]
+		private string _executableName;
 		[SerializeField]
 		private BuildOptions _buildOptions;
+		[SerializeField]
+		private string _tempBuildPath = "BuildCache";
+		[SerializeField]
+		private string _outputBuildPath = "Build";
+		[SerializeField]
+		private BuildScriptablePreprocessor[] _buildPreprocessors;
+		[SerializeField]
+		private BuildScriptablePostprocessor[] _buildPostprocessors;
 
-		public override string[] GetTestExecutionAdditionalParameters => new[]
-			{ArgumentJobBuildPath};
+		public abstract string FileExtension { get; }
+		public string ExecutableName => _executableName;
+		public string OutputBuildPath => _outputBuildPath;
 
-		public override void TestExecute(Dictionary<string, string> arguments) {
-			arguments?.Add(ArgumentJobOptions,
-				GetInternalVariables().First(kv => kv.Key == TemplateJobBuildOptions).Value);
-			Execute(arguments);
+		protected AbstractBuildJob() : base(new JobArtifacts(ArtifactCondition.OnSuccess, new[] {"assetSizeReport.txt", "Build/*"})) {
 		}
 
-		public override void Execute(Dictionary<string, string> arguments) {
-			var buildPlayerOptions = ConstructBuildOptions(arguments);
-			RunBuildPreprocessors(buildPlayerOptions, arguments);
+		public override void Execute() {
+			var buildPlayerOptions = ConstructBuildOptions();
+			RunBuildPreprocessors(buildPlayerOptions);
 			var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
 			WriteAssetReport(report);
-			RunBuildPostprocessors(buildPlayerOptions, arguments, report);
+			MoveBuildToOutputFolder();
+			RunBuildPostprocessors(buildPlayerOptions, report);
 		}
 
-		public virtual BuildPlayerOptions ConstructBuildOptions(Dictionary<string, string> arguments) {
-			int.TryParse(arguments[ArgumentJobOptions], out var buildOptions);
+		protected virtual BuildPlayerOptions ConstructBuildOptions() {
 			PlayerSettings.SplashScreen.showUnityLogo = false;
 			var buildPlayerOptions = new BuildPlayerOptions {
+				target = JobBuildTarget,
 				scenes = EditorBuildSettings.scenes.Where(s => s.enabled)
 					.Where(s => !string.IsNullOrEmpty(s.path))
 					.Select(s => s.path).ToArray(),
-				locationPathName = arguments[ArgumentJobBuildPath],
-				options = (BuildOptions)buildOptions,
-				
+				locationPathName = Path.Combine(_tempBuildPath,
+					string.IsNullOrEmpty(FileExtension) ? _executableName : $"{_executableName}.{FileExtension}"),
+				options = _buildOptions
 			};
 			return buildPlayerOptions;
 		}
 
-		public override void SetVariables(Dictionary<string, string> variables) {
-			base.SetVariables(variables);
-			_buildOptions = (BuildOptions)int.Parse(variables[TemplateJobBuildOptions]);
-		}
-
-		protected override IEnumerable<KeyValuePair<string, string>> GetInternalVariables() {
-			foreach (var internalVariable in base.GetInternalVariables()) {
-				yield return internalVariable;
-			}
-			yield return new KeyValuePair<string, string>(TemplateJobBuildName, GetBuildPath());
-			yield return new KeyValuePair<string, string>(TemplateJobBuildOptions, ((int)_buildOptions).ToString());
-		}
-
-		protected virtual string GetBuildPath() {
-			return PlayerSettings.productName;
-		}
-
-		private void RunBuildPreprocessors(BuildPlayerOptions buildPlayerOptions, Dictionary<string, string> arguments) {
-			var type = typeof(ICiBuildPreprocessor);
-			var types = AppDomain.CurrentDomain.GetAssemblies()
-				.SelectMany(s => s.GetTypes())
-				.Where(t => type.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract);
-
-			var instances = types.Select(t => Activator.CreateInstance(t) as ICiBuildPreprocessor);
-			instances = instances.OrderBy(i => i.Order);
-			foreach (var buildPreprocessor in instances) {
-				buildPreprocessor.PreprocessBuild(buildPlayerOptions, arguments);
+		private void RunBuildPreprocessors(BuildPlayerOptions buildPlayerOptions) {
+			if (_buildPreprocessors == null) return;
+			foreach (var buildPreprocessor in _buildPreprocessors) {
+				buildPreprocessor.PreprocessBuild(buildPlayerOptions);
 			}
 		}
 
@@ -106,17 +83,32 @@ namespace UnityCiWizard.Editor.Jobs.Build {
 			}
 			file.Close();
 		}
-		
-		private void RunBuildPostprocessors(BuildPlayerOptions buildPlayerOptions, Dictionary<string, string> arguments, BuildReport buildReport) {
-			var type = typeof(ICiBuildPostprocessor);
-			var types = AppDomain.CurrentDomain.GetAssemblies()
-				.SelectMany(s => s.GetTypes())
-				.Where(t => type.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract);
 
-			var instances = types.Select(t => Activator.CreateInstance(t) as ICiBuildPostprocessor);
-			instances = instances.OrderBy(i => i.Order);
-			foreach (var buildPreprocessor in instances) {
-				buildPreprocessor.PreprocessBuild(buildPlayerOptions, arguments, buildReport);
+		private void MoveBuildToOutputFolder() {
+			var buildFolder = _tempBuildPath;
+			var outputFolder = _outputBuildPath;
+			if (!Directory.Exists(outputFolder)) {
+				Directory.CreateDirectory(outputFolder);
+			}
+			var objectsInBuildFolder = Directory.GetDirectories(buildFolder).Concat(Directory.GetFiles(buildFolder));
+			foreach (var objectPath in objectsInBuildFolder) {
+				var ignore = IgnoreBuildObjects.Any(ignoreBuildObject => objectPath.Contains(ignoreBuildObject));
+				if (ignore) continue;
+				var attributes = File.GetAttributes(objectPath);
+				if (attributes.HasFlag(FileAttributes.Directory)) {
+					var directoryInfo = new DirectoryInfo(objectPath);
+					directoryInfo.MoveTo(Path.Combine(outputFolder, directoryInfo.Name));
+					continue;	
+				}
+				var fileInfo = new FileInfo(objectPath);
+				fileInfo.MoveTo(Path.Combine(outputFolder, fileInfo.Name));
+			}
+		}
+		
+		private void RunBuildPostprocessors(BuildPlayerOptions buildPlayerOptions, BuildReport buildReport) {
+			if (_buildPostprocessors == null) return;
+			foreach (var buildPostprocessor in _buildPostprocessors) {
+				buildPostprocessor.PostprocessBuild(buildPlayerOptions, _outputBuildPath, buildReport);
 			}
 		}
 	}

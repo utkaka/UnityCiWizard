@@ -1,0 +1,10 @@
+{{include 'Jobs/AbstractJob'}}
+  stage: deploy
+  allow_failure: true
+  dependencies:
+    - {{job.apk_to_install.name}}
+  script:
+    - |-
+      adb devices | tail -n +2 | cut -sf 1 | xargs -iX adb -s X install $UCI_CFG_PROJECT_PATH/{{job.apk_to_install.output_build_path}}/{{job.apk_to_install.executable_name}}.{{job.apk_to_install.file_extension}}
+  tags:
+    - Adb

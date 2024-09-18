@@ -1,0 +1,6 @@
+artifacts:
+  when: {{artifact_condition_to_string job.artifacts.when}}
+  paths:
+    {{~ for path in job.artifacts.paths ~}}
+    - "$UCI_CFG_PROJECT_PATH/{{path~}}"
+    {{~ end ~}}

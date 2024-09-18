@@ -1,0 +1,12 @@
+{{include 'Jobs/AbstractJob'}}
+  stage: deploy
+  allow_failure: true
+  dependencies:
+    - {{job.apk_to_install.name}}
+  script:
+    - |-
+      adb connect "$UCI_CFG_ADB_WIFI_IP"
+      adb -s "$UCI_CFG_ADB_WIFI_IP" install $UCI_CFG_PROJECT_PATH/{{job.apk_to_install.output_build_path}}/{{job.apk_to_install.executable_name}}.{{job.apk_to_install.file_extension}}
+      adb disconnect "$UCI_CFG_ADB_WIFI_IP"
+  tags:
+    - Adb

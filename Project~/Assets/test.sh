@@ -1,0 +1,56 @@
+#!/bin/bash
+
+CI_COMMIT_TITLE="test"
+CI_COMMIT_DESCRIPTION="mile: test
+See merge request gameonproduction/gameon-unity-gitlab-ci!19"
+UCI_CFG_PROJECT_PATH="/Users/utkaka/Work/gameon-unity-gitlab-ci/Project~"
+
+CI_COMMIT_DESCRIPTION=$(echo "$CI_COMMIT_DESCRIPTION" | xargs)
+
+echo "$CI_COMMIT_DESCRIPTION"
+
+if [ "$UCI_CFG_PROJECT_PATH" == "." ]; then
+  UCI_VAR_UNITY_FULL_PROJECT_PATH=${PWD}
+else
+  UCI_VAR_UNITY_FULL_PROJECT_PATH="${PWD}/${UCI_CFG_PROJECT_PATH}"
+fi
+
+echo $UCI_VAR_UNITY_FULL_PROJECT_PATH
+
+UCI_VAR_VERSION_CHANGE="none"
+if [[ "$CI_COMMIT_TITLE" =~ ^mile ]] || [[ "$CI_COMMIT_DESCRIPTION" =~ ^mile ]] ;
+then
+  UCI_VAR_VERSION_CHANGE="mile"
+elif [[ "$CI_COMMIT_TITLE" =~ ^feat ]] || [[ "$CI_COMMIT_DESCRIPTION" =~ ^feat ]] ;
+then
+  UCI_VAR_VERSION_CHANGE="feat"
+elif [[ "$CI_COMMIT_TITLE" =~ ^fix ]] || [[ "$CI_COMMIT_DESCRIPTION" =~ ^fix ]];
+then
+  UCI_VAR_VERSION_CHANGE="fix"
+fi
+if [[ $UCI_VAR_VERSION_CHANGE == "none" ]];
+then
+  echo "No semantic version matches"
+  exit 0
+fi
+UCI_VAR_PROJECT_SETTINGS_PATH=${UCI_CFG_PROJECT_PATH}/ProjectSettings/ProjectSettings.asset
+UCI_VAR_UNITY_BUNDLE_VERSION=$(awk 'match($0,/bundleVersion: [^ ]*/){ print substr($0, RSTART + 15, RLENGTH)}' < $UCI_VAR_PROJECT_SETTINGS_PATH)
+UCI_VAR_UNITY_BUNDLE_VERSION_FIX=$(awk -F'.' '{print $3}' <<< "$UCI_VAR_UNITY_BUNDLE_VERSION")
+UCI_VAR_UNITY_BUNDLE_VERSION_FEAT=$(awk -F'.' '{print $2}' <<< "$UCI_VAR_UNITY_BUNDLE_VERSION")
+UCI_VAR_UNITY_BUNDLE_VERSION_MILE=$(awk -F'.' '{print $1}' <<< "$UCI_VAR_UNITY_BUNDLE_VERSION")
+
+if [[ $UCI_VAR_VERSION_CHANGE == "mile" ]];
+then
+  UCI_VAR_UNITY_BUNDLE_VERSION_NEW="$(($UCI_VAR_UNITY_BUNDLE_VERSION_MILE + 1)).00.00"
+elif [[ $UCI_VAR_VERSION_CHANGE == "feat" ]];
+then
+  UCI_VAR_UNITY_BUNDLE_VERSION_NEW="$UCI_VAR_UNITY_BUNDLE_VERSION_MILE.$(printf '%02d\n' "$(($UCI_VAR_UNITY_BUNDLE_VERSION_FEAT + 1))").00"
+else
+  UCI_VAR_UNITY_BUNDLE_VERSION_NEW="$UCI_VAR_UNITY_BUNDLE_VERSION_MILE.$UCI_VAR_UNITY_BUNDLE_VERSION_FEAT.$(printf '%02d\n' "$(($UCI_VAR_UNITY_BUNDLE_VERSION_FIX + 1))")"
+fi
+echo "$UCI_VAR_UNITY_BUNDLE_VERSION_NEW"
+sed -i '' "s/bundleVersion: $UCI_VAR_UNITY_BUNDLE_VERSION/bundleVersion: $UCI_VAR_UNITY_BUNDLE_VERSION_NEW/g" $UCI_VAR_PROJECT_SETTINGS_PATH
+
+UCI_VAR_UNITY_BUNDLE_VERSION_ANDROID=$(awk 'match($0,/AndroidBundleVersionCode: [^ ]*/){ print substr($0, RSTART + 26, RLENGTH)}' < $UCI_VAR_PROJECT_SETTINGS_PATH)
+sed -i '' "s/AndroidBundleVersionCode: $UCI_VAR_UNITY_BUNDLE_VERSION_ANDROID/AndroidBundleVersionCode: $(($UCI_VAR_UNITY_BUNDLE_VERSION_ANDROID + 1))/g" $UCI_VAR_PROJECT_SETTINGS_PATH
+echo "$UCI_VAR_UNITY_BUNDLE_VERSION_ANDROID"

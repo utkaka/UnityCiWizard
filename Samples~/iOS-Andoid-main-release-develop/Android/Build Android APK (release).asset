@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e06ec33e5e94641b0ba44d7a8234c935, type: 3}
+  m_Name: Build Android APK (release)
+  m_EditorClassIdentifier: 
+  _when: 0
+  _branches: release
+  _cachePolicy: 0
+  _cacheWhen: 0
+  _cache: {fileID: 11400000, guid: 4a84c9e5734bc4b779b0e08ba6022c85, type: 2}
+  _artifacts:
+    _when: 0
+    _paths:
+    - assetSizeReport.txt
+    - Build/*
+  _executableName: application
+  _buildOptions: 0
+  _tempBuildPath: BuildCache
+  _outputBuildPath: Build
+  _buildPreprocessors: []
+  _buildPostprocessors: []
+  _keyStore: 
+  _keyAlias: 
+  _keyStorePass: 
+  _keyAliasPass: 

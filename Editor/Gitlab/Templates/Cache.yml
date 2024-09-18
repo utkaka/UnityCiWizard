@@ -1,0 +1,8 @@
+cache:
+  key: {{job.cache.name}}
+  when: {{artifact_condition_to_string job.cache_when}}
+  policy: {{cache_policy_to_string job.cache_policy}}
+  paths:
+    {{~ for path in job.cache.paths ~}}
+    - "$UCI_CFG_PROJECT_PATH/{{path~}}"
+    {{~ end ~}}

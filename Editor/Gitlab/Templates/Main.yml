@@ -6,50 +6,128 @@ stages:
   - deploy
 
 variables:
-  UCI_BUILD_CACHE_PATH: BuildCache
-  UCI_BUILD_PATH: Build
+  UCI_CFG_PROJECT_PATH: "{{ project_path }}"
+  
+.check-environment-variables: &check-environment-variables
+  - |-
+    if [ -z "${UCI_ENV_UNITY_HUB_COMMAND}" ]; then
+      echo "Variable UCI_ENV_UNITY_HUB_COMMAND is not set or empty"
+      exit 1
+    fi
+    if [ -z "${UCI_ENV_UNITY_EXECUTABLE+set}" ]; then
+      echo "Variable UCI_ENV_UNITY_EXECUTABLE is not set"
+      exit 1
+    fi
+    if [ -z "${UCI_ENV_UNITY_USERNAME}" ]; then
+      echo "Variable UCI_ENV_UNITY_USERNAME is not set or empty"
+      exit 1
+    fi
+    if [ -z "${UCI_ENV_UNITY_PASSWORD}" ]; then
+      echo "Variable UCI_ENV_UNITY_PASSWORD is not set or empty"
+      exit 1
+    fi
+    if [ -z "${UCI_ENV_UNITY_SERIAL}" ]; then
+      echo "Variable UCI_ENV_UNITY_SERIAL is not set or empty"
+      exit 1
+    fi
+  
+.unity-get-project-version: &unity-get-project-version
+  - |-
+    UCI_VAR_PROJECT_VERSION=$(awk '{for(i=1;i<=NF;i++){if($i~/([0-9A-Za-z]+(\.[0-9A-Za-z]+)+)/) {print $i;exit;}}}' $UCI_CFG_PROJECT_PATH/ProjectSettings/ProjectVersion.txt)
+
+.unity-check-install-editor: &unity-check-install-editor
+  - |-
+    UCI_VAR_UNITY_EDITOR_PATH=$("$UCI_ENV_UNITY_HUB_COMMAND" --headless editors -i | awk -v ver="$UCI_VAR_PROJECT_VERSION" '$0~ver{print}' | awk 'match($0,/installed at [^ ]*/){ print substr($0, RSTART + 13, RLENGTH)}')
+    if [ -z "$UCI_VAR_UNITY_EDITOR_PATH" ]; then 
+      UCI_VAR_INSTALL_LOCKFILE="/tmp/${UCI_VAR_PROJECT_VERSION}.lock"
+      if [ ! -f "$UCI_VAR_INSTALL_LOCKFILE" ]; then
+        touch "$UCI_VAR_INSTALL_LOCKFILE"
+        UCI_VAR_PROJECT_CHANGESET=$(awk '{for(i=1;i<=NF;i++){if($i~/\([0-9A-Za-z]+\)/) {print substr($i, 2, length($i)-2)}}}' $UCI_CFG_PROJECT_PATH/ProjectSettings/ProjectVersion.txt)
+        "$UCI_ENV_UNITY_HUB_COMMAND" --headless install --version "$UCI_VAR_PROJECT_VERSION" --changeset "$UCI_VAR_PROJECT_CHANGESET"
+        rm "$UCI_VAR_INSTALL_LOCKFILE"
+      else
+        while [ -f "$UCI_VAR_INSTALL_LOCKFILE" ]
+        do
+          sleep 1m
+          echo "Waiting for another job to install Editor"
+        done
+      fi
+      UCI_VAR_UNITY_EDITOR_PATH=$("$UCI_ENV_UNITY_HUB_COMMAND" --headless editors -i | awk -v ver="$UCI_VAR_PROJECT_VERSION" '$0~ver{print}' | awk 'match($0,/installed at [^ ]*/){ print substr($0, RSTART + 13, RLENGTH)}')
+    fi
+    echo "UCI_VAR_UNITY_EDITOR_PATH=$UCI_VAR_UNITY_EDITOR_PATH" >> $GITLAB_ENV
+    
+.unity-check-install-modules: &unity-check-install-modules
+  - |-
+    if [ -n "$UCI_CFG_JOB_UNITY_MODULES" ]; then 
+      UCI_VAR_INSTALL_LOCKFILE="/tmp/${UCI_VAR_PROJECT_VERSION}_${UCI_CFG_JOB_UNITY_MODULES}.lock"
+      if [ ! -f "$UCI_VAR_INSTALL_LOCKFILE" ]; then
+        touch "$UCI_VAR_INSTALL_LOCKFILE"
+        "$UCI_ENV_UNITY_HUB_COMMAND" --headless install-modules --version "$UCI_VAR_PROJECT_VERSION" --cm -m ${UCI_CFG_JOB_UNITY_MODULES} || echo "No modules to install"
+        rm "$UCI_VAR_INSTALL_LOCKFILE"
+      else
+        while [ -f "$UCI_VAR_INSTALL_LOCKFILE" ]
+        do
+          sleep 10s
+          echo "Waiting for another job to install modules"
+        done
+      fi
+    fi
+    
+#bee_backend workaround (https://discussions.unity.com/t/linux-editor-stuck-on-loading-because-of-bee_backend-w-workaround/854480/37)
+.unity-apply-bee-workaround: &unity-apply-bee-workaround
+  - |-
+    UCI_VAR_UNITY_EDITOR_PARENT_PATH="$(dirname "$UCI_VAR_UNITY_EDITOR_PATH")"
+    find $UCI_VAR_UNITY_EDITOR_PARENT_PATH -name 'bee_backend' -type f -print0 | 
+    while IFS= read -r -d '' line; do 
+      UCI_VAR_BEE_EXECUTABLE=$line
+      UCI_VAR_BEE_REAL_EXECUTABLE="${UCI_VAR_BEE_EXECUTABLE}_real"
+      if [ ! -f "$UCI_VAR_BEE_REAL_EXECUTABLE" ]; then
+        mv "$UCI_VAR_BEE_EXECUTABLE" "$UCI_VAR_BEE_REAL_EXECUTABLE"
+        cat > "$UCI_VAR_BEE_EXECUTABLE" <<'EOF'
+    #! /bin/bash
+    args=("$@")
+    for ((i=0; i<"${#args[@]}"; ++i))
+    do
+        case ${args[i]} in
+            --stdin-canary)
+                unset args[i];
+                break;;
+        esac
+    done
+    ${0}_real "${args[@]}"
+    EOF
+        chmod +x "$UCI_VAR_BEE_EXECUTABLE"
+      fi
+    done
+    
+.unity-set-batch-mode-arguments: &unity-set-batch-mode-arguments
+  - |-
+    if [ "$UCI_CFG_PROJECT_PATH" == "." ]; then
+      UCI_VAR_UNITY_FULL_PROJECT_PATH=${PWD}
+    else
+      UCI_VAR_UNITY_FULL_PROJECT_PATH="${PWD}/${UCI_CFG_PROJECT_PATH}"
+    fi
+    UCI_VAR_UNITY_BATCH_MODE_ARGUMENTS="-projectPath ${UCI_VAR_UNITY_FULL_PROJECT_PATH} -batchmode -silent-crashes -logFile -"
+    UCI_VAR_UNITY_BATCH_MODE_ARGUMENTS="${UCI_VAR_UNITY_BATCH_MODE_ARGUMENTS} -username ${UCI_ENV_UNITY_USERNAME} -password ${UCI_ENV_UNITY_PASSWORD} -serial ${UCI_ENV_UNITY_SERIAL}"
+    echo 'UCI_VAR_UNITY_BATCH_MODE_ARGUMENTS="$UCI_VAR_UNITY_BATCH_MODE_ARGUMENT"' >> $GITLAB_ENV
+
+.unity-apply-job-call-arguments: &unity-apply-job-call-arguments
+  - |-
+    UCI_VAR_UNITY_BATCH_MODE_ARGUMENTS="${UCI_VAR_UNITY_BATCH_MODE_ARGUMENTS} -quit -executeMethod CiWizard.Editor.CiConfig.Execute"
 
 .unity: &unity
   before_script:
-    - if [ -z "$UCI_PROJECT_UNITY_VERSION" ]; then UCI_PROJECT_UNITY_VERSION=$(awk '{for(i=1;i<=NF;i++){if($i~/([0-9A-Za-z]+(\.[0-9A-Za-z]+)+)/) {print $i;exit;}}}' ./ProjectSettings/ProjectVersion.txt); fi
-    - echo "$UCI_PROJECT_UNITY_VERSION"
-    - if [ -z "$UCI_PROJECT_UNITY_VERSION_CHANGESET" ]; then UCI_PROJECT_UNITY_VERSION_CHANGESET=$(awk '{for(i=1;i<=NF;i++){if($i~/\([0-9A-Za-z]+\)/) {print substr($i, 2, length($i)-2)}}}' ./ProjectSettings/ProjectVersion.txt); fi
-    - UCI_UNITY_EDITOR_PATH=$("$UCI_UNITY_HUB_PATH" -- --headless editors -i | awk -v ver="$UCI_PROJECT_UNITY_VERSION" '$0~ver{print}' | awk 'match($0,/installed at [^ ]*/){ print substr($0, RSTART + 13, RLENGTH)}')
-    - if [ -z "$UCI_UNITY_EDITOR_PATH" ]; then "$UCI_UNITY_HUB_PATH" -- --headless install --version "$UCI_PROJECT_UNITY_VERSION" --changeset "$UCI_PROJECT_UNITY_VERSION_CHANGESET"; fi
-    - if [ -z "$UCI_UNITY_EDITOR_PATH" ]; then UCI_UNITY_EDITOR_PATH=$("$UCI_UNITY_HUB_PATH" -- --headless editors -i | awk -v ver="$UCI_PROJECT_UNITY_VERSION" '$0~ver{print}' | awk 'match($0,/installed at [^ ]*/){ print substr($0, RSTART + 13, RLENGTH)}'); fi
-    - if [ -n "$UCI_UNITY_MODULE" ]; then "$UCI_UNITY_HUB_PATH" -- --headless install-modules --version "$UCI_PROJECT_UNITY_VERSION" "${UCI_UNITY_MODULE[@]/#/--module }" --cm; fi
-    - echo "$UCI_UNITY_EDITOR_PATH" > editor_path.txt
-    - '"$UCI_UNITY_EDITOR_PATH"/"$UCI_UNITY_EXECUTABLE" -projectPath $pwd -batchmode -silent-crashes
-          -logFile unity.log
-          $UCI_LICENSE_CREDENTIALS 
-          $UCI_LICENSE_SERIAL
-          $UCI_JOB_ARGUMENTS'
+    - *check-environment-variables
+    - *unity-get-project-version
+    - *unity-check-install-editor
+    - *unity-check-install-modules
+    - *unity-apply-bee-workaround
+    - *unity-set-batch-mode-arguments
   after_script:
-    - UCI_UNITY_EDITOR_PATH=$(cat editor_path.txt)
-    - '"$UCI_UNITY_EDITOR_PATH"/"$UCI_UNITY_EXECUTABLE" -quit -batchmode $UCI_LICENSE_CREDENTIALS -returnlicense -logFile -'
+    - |-
+      "$UCI_VAR_UNITY_EDITOR_PATH""$UCI_ENV_UNITY_EXECUTABLE" -quit -batchmode -username ${UCI_ENV_UNITY_USERNAME} -password ${UCI_ENV_UNITY_PASSWORD} -returnlicense -logFile -
 
-.build: &build
-  <<: *unity
-  stage: build
-  variables:
-    UCI_JOB_ARGUMENTS: '
-    -quit
-    -executeMethod UnityCiWizard.Editor.CiJob.Execute 
-    -ciJobType "$UCI_JOB_TYPE" 
-    "$UCI_JOB_BUILD_ARGUMENTS"'
-  cache:
-    key: "$CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$UCI_UNITY_TARGET"
-    paths:
-      - "Library"
-      - "$UCI_BUILD_CACHE_PATH/$CI_JOB_NAME"
-    when: 'always'
-  script:
-    - mkdir -p "$UCI_BUILD_PATH"/"$CI_JOB_NAME"
-    - mv "$UCI_BUILD_CACHE_PATH"/"$CI_JOB_NAME"/"$UCI_BUILD_NAME" "$UCI_BUILD_PATH"/"$CI_JOB_NAME"
-  artifacts:
-    name: "$CI_JOB_NAME"
-    when: always
-    paths:
-      - unity.log
-      - assetSizeReport.txt
-      - "$UCI_BUILD_PATH/$CI_JOB_NAME/*"
+{{~ for job in jobs ~}}
+{{include job.template_file_name}}
+
+{{~ end ~}}
