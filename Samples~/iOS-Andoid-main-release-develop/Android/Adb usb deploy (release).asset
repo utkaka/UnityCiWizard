@@ -20,4 +20,4 @@ MonoBehaviour:
   _artifacts:
     _when: 0
     _paths: []
-  _apkToInstall: {fileID: 11400000, guid: 48b5f3eecb560406293b2fc1e95d07bd, type: 2}
+  _apkToInstall: {fileID: 11400000, guid: f4045a28350e9423dbbd52f6e9d8a066, type: 2}
