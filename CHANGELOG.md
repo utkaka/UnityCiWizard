@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/utkaka/UnityCiWizard/compare/v2.0.1...v2.0.2) (2024-09-20)
+
+
+### Bug Fixes
+
+* adb deploy jobs in samples, license returning ([9a2a18f](https://github.com/utkaka/UnityCiWizard/commit/9a2a18f46c67c4c4bc4133098b14ed46768514ee))
+
 ## [2.0.1](https://github.com/utkaka/UnityCiWizard/compare/v2.0.0...v2.0.1) (2024-09-18)
 
 
