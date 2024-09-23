@@ -9,7 +9,9 @@
   script:
     - *unity-apply-job-call-arguments
     - |-
-      "$UCI_VAR_UNITY_EDITOR_PATH""$UCI_ENV_UNITY_EXECUTABLE" $UCI_VAR_UNITY_BATCH_MODE_ARGUMENTS -buildTarget ${UCI_CFG_JOB_UNITY_EDITOR_TARGET}
+        echo -e "\e[96m\e[0Ksection_start:`date +%s`:import_section\r\e[0KStart importing project\e[0m"
+        "$UCI_VAR_UNITY_EDITOR_PATH""$UCI_ENV_UNITY_EXECUTABLE" $UCI_VAR_UNITY_BATCH_MODE_ARGUMENTS -buildTarget ${UCI_CFG_JOB_UNITY_EDITOR_TARGET}
+        echo -e "\e[96m\e[0Ksection_end:`date +%s`:exit_section\r\e[0K\e[0m"
   tags:
     - Unity
     - {{job.runner_tag}}
