@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/utkaka/UnityCiWizard/compare/v2.0.2...v2.0.3) (2024-09-23)
+
+
+### Bug Fixes
+
+* add sections collapse and colorized output ([74d22af](https://github.com/utkaka/UnityCiWizard/commit/74d22afd6f27abec127ae2cde4c78b75aedd9e3f))
+
 ## [2.0.2](https://github.com/utkaka/UnityCiWizard/compare/v2.0.1...v2.0.2) (2024-09-20)
 
 
