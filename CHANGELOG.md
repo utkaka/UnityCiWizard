@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/utkaka/UnityCiWizard/compare/v2.0.3...v2.0.4) (2024-10-09)
+
+
+### Bug Fixes
+
+* semver job ([26a7bab](https://github.com/utkaka/UnityCiWizard/commit/26a7bab6976e32fd2f7be60a4624626e709ec608))
+
 ## [2.0.3](https://github.com/utkaka/UnityCiWizard/compare/v2.0.2...v2.0.3) (2024-09-23)
 
 
