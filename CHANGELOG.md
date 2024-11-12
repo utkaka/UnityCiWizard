@@ -1,3 +1,10 @@
+## [2.0.5](https://github.com/utkaka/UnityCiWizard/compare/v2.0.4...v2.0.5) (2024-11-12)
+
+
+### Bug Fixes
+
+* bug in SemVer, add WebGL build job ([648e468](https://github.com/utkaka/UnityCiWizard/commit/648e468fbbdd7ece88ecd5829ceb2f8cc3c6ef13))
+
 ## [2.0.4](https://github.com/utkaka/UnityCiWizard/compare/v2.0.3...v2.0.4) (2024-10-09)
 
 
