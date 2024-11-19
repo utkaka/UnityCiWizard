@@ -9,10 +9,10 @@ namespace CiWizard.Editor.Jobs.Build.Targets {
 
         [Header("WebGL Settings")]
         [SerializeField]
-        private UnityEditor.WebGL.CodeOptimization _codeOptimization;
+        private string _codeOptimization;
 
         protected override BuildPlayerOptions ConstructBuildOptions() {
-            UnityEditor.WebGL.UserBuildSettings.codeOptimization = _codeOptimization;
+            EditorUserBuildSettings.SetPlatformSettings(BuildPipeline.GetBuildTargetName(BuildTarget.WebGL), "CodeOptimization", _codeOptimization);
             return base.ConstructBuildOptions();
         }
     }
