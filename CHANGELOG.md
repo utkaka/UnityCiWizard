@@ -1,3 +1,10 @@
+## [2.0.8](https://github.com/utkaka/UnityCiWizard/compare/v2.0.7...v2.0.8) (2024-11-19)
+
+
+### Bug Fixes
+
+* webgl code optimization ([0c1e616](https://github.com/utkaka/UnityCiWizard/commit/0c1e6168637ec3bab37aaf14209c61556c87156a))
+
 ## [2.0.7](https://github.com/utkaka/UnityCiWizard/compare/v2.0.6...v2.0.7) (2024-11-19)
 
 
