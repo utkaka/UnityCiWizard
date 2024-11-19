@@ -1,3 +1,10 @@
+## [2.0.6](https://github.com/utkaka/UnityCiWizard/compare/v2.0.5...v2.0.6) (2024-11-12)
+
+
+### Bug Fixes
+
+* error in webgl job ([24f9e0b](https://github.com/utkaka/UnityCiWizard/commit/24f9e0b254047f7544c75668dab13ae12e8d6787))
+
 ## [2.0.5](https://github.com/utkaka/UnityCiWizard/compare/v2.0.4...v2.0.5) (2024-11-12)
 
 
